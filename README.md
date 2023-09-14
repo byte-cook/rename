@@ -7,9 +7,9 @@ The general structure of a command is as follows:
 ```
 rename.py SELECT-OPTIONS COMMAND COMMAND-ARGUMENTS FILES
 ```
-SELECT-OPTIONS: Define what to change (which parts of a file name).
-COMMAND COMMAND-ARGUMENTS: Define how to change (e.g. add a text).
-FILES: Define the files that should be renamed. If missing, all files in the current directory are changed.
+SELECT-OPTIONS: Define what to change (which parts of a file name).  
+COMMAND COMMAND-ARGUMENTS: Define how to change (e.g. add a text).  
+FILES: Define the files that should be renamed. If missing, all files in the current directory are changed.  
 
 Rename.py will never overwrite other files. If a destination file already exists, this file is simply skipped.
 
