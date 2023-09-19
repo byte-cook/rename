@@ -15,6 +15,7 @@ from textwrap import dedent
 from pathlib import Path
 from enum import Enum
 from functools import cached_property
+import fnmatch
 try:
     from mutagen.mp3 import MP3
     SUPPORT_MUTAGEN = True
@@ -789,7 +790,7 @@ def getCommand(args, renamers):
                 firstToken.text = renamer.resolvePlaceholders(targetDir, firstToken) + firstToken.text
         return dir
 
-def getPaths(tops, recursive=False, dirOnly=False):
+def getPaths(tops, dirOnly, args):
     """Returns all files and folders."""
     paths = []
     for top in tops:
@@ -797,7 +798,7 @@ def getPaths(tops, recursive=False, dirOnly=False):
             raise RenameError(f'Error: File "{top}" does not exist')
         top = os.path.abspath(top)
         if os.path.isdir(top):
-            if recursive:
+            if args.recursive:
                 for (root, dirs, files) in os.walk(top):
                     if dirOnly:
                         for d in dirs:
@@ -818,6 +819,26 @@ def getPaths(tops, recursive=False, dirOnly=False):
             paths.append(top)
     # remove duplicates
     paths = set(paths)
+    # check exclude/include
+    if args.excludeList:
+        remainingPaths = []
+        for p in paths:
+            doAppend = True
+            # check excludes
+            for exclude in args.excludeList:
+                if fnmatch.fnmatch(p, exclude):
+                    doAppend = False
+                    # check includes
+                    for include in args.includeList:
+                        if fnmatch.fnmatch(p, include):
+                            doAppend = True
+                            break
+                    logging.debug(f'Include "{p}"' if doAppend else f'Exclude "{p}"')
+                    break
+
+            if doAppend:
+                remainingPaths.append(p)
+        return remainingPaths
     return paths
 
 def positiveInt(value):
@@ -865,8 +886,8 @@ def main(argv=None):
                 n   : matches numbers 0-9 (default is to match any character: .)
                 1-9 : number of characters to be read in (default is 0 or more: *)
             
-            Example for file "20180122-description-long.jpg": --pattern "|Y:4||M:2||D:2|-|A:s:?|-|B|" 
-                |Y| = 2018
+            Example for file "20180122-description-long.jpg": --pattern "|Y:4:n||M:2||D:2|-|A:s:?|-|B|" 
+                |Y| = 2018 (4 numbers)
                 |M| = 01
                 |D| = 22
                 |A| = description (selected, not greedy)
@@ -885,6 +906,8 @@ def main(argv=None):
         parser.add_argument('-n', '--dry-run', action='store_true', dest='simulate', help='simulate backup process')
         parser.add_argument('-r', '--recursive', action='store_true', help='perform command recursively')
         parser.add_argument('--dir-only', action='store_true', dest='dirOnly', help='rename folders only')
+        parser.add_argument('--exclude', action='append', dest='excludeList', default=[], help='exclude file/folder matching full path pattern')
+        parser.add_argument('--include', action='append', dest='includeList', default=[], help='do not exclude file/folder matching full path pattern')
         # basename/ext
         group_1 = parser.add_argument_group('1. Select the part of a filename to change (<basename>.<ext>)')
         group_1 = group_1.add_mutually_exclusive_group()
@@ -994,7 +1017,7 @@ def main(argv=None):
         logging.basicConfig(format='%(levelname)s: %(message)s', level=level, force=True)
         
         # get files
-        files = getPaths(args.file, recursive=args.recursive, dirOnly=args.dirOnly)
+        files = getPaths(args.file, args.dirOnly, args)
         files = sorted(files)
         
         # init parser

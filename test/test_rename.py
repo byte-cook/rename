@@ -88,6 +88,28 @@ class TestRename(unittest.TestCase):
             rename.main(['--debug', 'test', 'file-does-not-exist.ext'])
         self.assertEqual(cm.exception.code, 1)
 
+    def test_file_exclude(self):
+        print('======= test_file_exclude ===')
+        self._createSingleFiles(ROOT_DIR, 'podcast 1 title.mp3', 'podcast 2 title.mp3', 'text.txt', 'image.png')
+        rename.main(['--debug', '--exclude', '*.mp3', '--exclude', '*.png', 'add', 'my_', ROOT_DIR])
+        self._assertFilesExist(ROOT_DIR, 'podcast 1 title.mp3', 'podcast 2 title.mp3', 'my_text.txt', 'image.png')
+    def test_file_exclude_include(self):
+        print('======= test_file_exclude_include ===')
+        self._createSingleFiles(ROOT_DIR, 'podcast 1 title.mp3', 'podcast 2 title.mp3', 'text.txt', 'image.png')
+        rename.main(['--debug', '--exclude', '*.mp3', '--exclude', '*.png', '--include', '*2 title.mp3', 'add', 'my_', ROOT_DIR])
+        self._assertFilesExist(ROOT_DIR, 'podcast 1 title.mp3', 'my_podcast 2 title.mp3', 'my_text.txt', 'image.png')
+    def test_file_exclude_include_path(self):
+        print('======= test_file_exclude_include_path ===')
+        f1Dir = str(Path(ROOT_DIR, 'Folder 1'))
+        os.makedirs(f1Dir, exist_ok=True)
+        self._createSingleFiles(f1Dir, 'track-1.mp3', 'track-2.mp3', 'cover.jpg')
+        f2Dir = str(Path(ROOT_DIR, 'Folder 2'))
+        os.makedirs(f2Dir, exist_ok=True)
+        self._createSingleFiles(f2Dir, 'track-1.mp3', 'track-2.mp3', 'cover.jpg')
+        rename.main(['--debug', '-r', '--exclude', '*.mp3', '--include', '*/Folder 2/*2.mp3', 'add', 'my_', ROOT_DIR])
+        self._assertFilesExist(f1Dir, 'track-1.mp3', 'track-2.mp3', 'my_cover.jpg')
+        self._assertFilesExist(f2Dir, 'track-1.mp3', 'my_track-2.mp3', 'my_cover.jpg')
+
     def test_fill(self):
         print('======= test_fill ===')
         self._createSingleFiles(ROOT_DIR, 'podcast 1 title.mp3', 'podcast 2 title.mp3', 'podcast 17 title.mp3', 'podcast 120 title.mp3')
