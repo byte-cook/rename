@@ -11,10 +11,17 @@ SELECT-OPTIONS: Define what to change (which parts of a file name).
 COMMAND COMMAND-ARGUMENTS: Define how to change (e.g. add a text).  
 FILES: Define the files that should be renamed. If missing, all files in the current directory are changed.  
 
-Rename.py will never overwrite other files. If a destination file already exists, this file is simply skipped.
+Features:
+- Safe: Rename.py will never overwrite other files. If a destination file already exists, this file is simply skipped.
+- Easy to use: No need to study regular expressions. Use command "test" to get more support.
+- More than 10 different commands available like add, replace, remove, swap, fill, dir, number.
+- Flexible: Combine commands with build-in placeholders (e.g. use "|artist|" for audio metadata)
+- Moving files to different directories.
+- Cross-platform: Supporing Linux, Windows and Mac OS X.
+- Supporting dry run.
+- Colorful output.
 
 If you can't use Rename.py to rename files as you want, feel free to create an issue. 
-
 
 ## Install
 
@@ -24,7 +31,7 @@ If you can't use Rename.py to rename files as you want, feel free to create an i
 sudo apt install python3.6
 ```
 
-2. Use pip to install dependencies:
+2. (Optional) Use pip to install dependencies:
 ```
 pip3 install mutagen
 ```
@@ -57,16 +64,6 @@ rename.py cut 3
 01-image.jpg -> image.jpg
 ```
 
-Use the "test" command to show what part of the file name is selected:
-```
-rename.py --index-to 4 test
-        10        20
-123456789|123456789|
-image-01.jpg         : imag
-image-02.jpg         : imag
-README.md            : READ
-```
-
 Replace all underscores by spaces:
 ```
 rename.py --text "_" replace " "
@@ -87,7 +84,23 @@ a file.ext -> a file01.ext
 second file.ext -> second file02.ext
 ```
 
-Create new directories by date of last change and move file there:
+Swap two parts (uses "-b" to change basename only, extensions remain unchanged):
+```
+rename.py -b swap "-"
+19810312-data 1.ext -> data_1-19810312.ext
+20180122-info.ext -> info-20180122.ext
+```
+
+Get list of all available placeholders:
+```
+rename.py test -p myfile.ext
+File name   : |f|     myfile.ext
+Base name   : |b|     myfile
+Extension   : |e|     ext
+...
+```
+
+Create new directories by date of last change (placeholder "|m|") and move file there:
 ```
 rename.py -v replace "|m|/|f|"
 file1.ext -> 2023-03-12/file1.ext
@@ -95,13 +108,14 @@ file2.ext -> 2023-03-12/file2.ext
 file3.ext -> 2023-04-12/file3.ext
 ```
 
-Get list of all (build-in) placeholders:
+Use the "test" command to show what part of the file name is selected:
 ```
-rename.py test -p myfile.ext
-File name   : |f|     myfile.ext
-Base name   : |b|     myfile
-Extension   : |e|     ext
-...
+rename.py --index-to 4 test
+        10        20
+123456789|123456789|
+image-01.jpg         : imag
+image-02.jpg         : imag
+README.md            : READ
 ```
 
 Remove by text range:
@@ -119,13 +133,6 @@ Chapter 2 the next chapter.ext -> Chapter 02-the next chapter.ext
 ...
 Chapter 10 chapter 10.ext: File name not changed
 Chapter 11 another chapter.ext: File name not changed
-```
-
-Swap two parts:
-```
-rename.py -b swap "-"
-19810312-data 1.ext -> data_1-19810312.ext
-20180122-info.ext -> info-20180122.ext
 ```
 
 Copy report6part4.txt to directory french/rapport6partie4.txt along with all similarly named files:
