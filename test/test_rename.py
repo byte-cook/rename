@@ -188,7 +188,6 @@ class TestRename(unittest.TestCase):
         self._assertFilesExist(ROOT_DIR, 'a.txt', '#a.txt')
         self._assertFilesContent(ROOT_DIR, 'a.txt', 'a.txt')
         self._assertFilesContent(ROOT_DIR, '#a.txt', '#a.txt')
-
     def test_not_overwrite_remove(self):
         print('======= test_not_overwrite_remove ===')
         self._createSingleFiles(ROOT_DIR, '11a.txt', '12a.txt', '21a.txt', '22a.txt', '77a.txt')
@@ -196,7 +195,6 @@ class TestRename(unittest.TestCase):
             rename.main(['--debug', '--index', '1', 'remove', ROOT_DIR])
         self.assertEqual(cm.exception.code, 2)
         self._assertFilesExist(ROOT_DIR, '1a.txt', '2a.txt', '21a.txt', '22a.txt', '7a.txt')
-
     def test_not_overwrite_order(self):
         print('======= test_not_overwrite_order ===')
         self._createSingleFiles(ROOT_DIR, 'a.txt', 'aa.txt', 'aaa.txt')
@@ -205,6 +203,14 @@ class TestRename(unittest.TestCase):
         self._assertFilesContent(ROOT_DIR, 'aa.txt', 'a.txt')
         self._assertFilesContent(ROOT_DIR, 'aaa.txt', 'aa.txt')
         self._assertFilesContent(ROOT_DIR, 'aaaa.txt', 'aaa.txt')
+    def test_not_overwrite_numbering(self):
+        print('======= test_not_overwrite_numbering ===')
+        self._createSingleFiles(ROOT_DIR, '1.txt', '2.txt', '3.txt')
+        rename.main(['--debug', '-b', 'number', '--replace', '-s', '2', ROOT_DIR])
+        self._assertFilesExist(ROOT_DIR, '2.txt', '3.txt', '4.txt')
+        self._assertFilesContent(ROOT_DIR, '2.txt', '1.txt')
+        self._assertFilesContent(ROOT_DIR, '3.txt', '2.txt')
+        self._assertFilesContent(ROOT_DIR, '4.txt', '3.txt')
 
     def test_numbering(self):
         print('======= test_numbering ===')
@@ -253,6 +259,11 @@ class TestRename(unittest.TestCase):
         rename.main(['--debug', '-r', 'number', '--no-reset', '-a', '#', ROOT_DIR])
         self._assertFilesExist(stonesDir, '01#track-01.txt', '07#track-07.txt', '09#track-09.txt', '13#track-13.txt')
         self._assertFilesExist(whoDir, '14#track-1.txt', '15#track-2.txt', '22#track-9.txt')
+    def test_numbering_replace(self):
+        print('======= test_numbering_replace ===')
+        self._createSingleFiles(ROOT_DIR, 'IMG_098.jpg', 'IMG_099.jpg')
+        rename.main(['--debug', '-b', 'number', '-b', '2023-', '--replace', ROOT_DIR])
+        self._assertFilesExist(ROOT_DIR, '2023-1.jpg', '2023-2.jpg')
 
     def test_placeholder_audio(self):
         print('======= test_placeholder_audio ===')

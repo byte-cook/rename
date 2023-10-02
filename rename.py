@@ -701,7 +701,10 @@ class NumberCmd():
         t = renamer.getFirstTokenToChange()
         if t is not None:
             numberText = f'{renamer.resolvePlaceholders(self.before, t)}{self.current:0{self.width}d}{renamer.resolvePlaceholders(self.after, t)}'
-            t.updateText(numberText, args.end)
+            if args.replace:
+                t.text = numberText
+            else:
+                t.updateText(numberText, args.end)
         self.current += self.increment
 
 def getCommand(args, renamers):
@@ -981,8 +984,8 @@ def main(argv=None):
         fillParser.add_argument('file', nargs='*', default='.', help='file or folder')
         # swap
         swapParser = subparsers.add_parser(CMD_SWAP, help='swap selected text by separator: a_b -> b_a')
-        swapParser.add_argument('-l', action='store_true', dest='left', help='separator belongs to left part')
-        swapParser.add_argument('-r', action='store_true', dest='right', help='separator belongs to right part')
+        swapParser.add_argument('-l', '--left', action='store_true', dest='left', help='separator belongs to left part')
+        swapParser.add_argument('-r', '--right', action='store_true', dest='right', help='separator belongs to right part')
         swapParser.add_argument('separator', help='the separator')
         swapParser.add_argument('file', nargs='*', default='.', help='file or folder')
         # number
@@ -993,6 +996,7 @@ def main(argv=None):
         numberParser.add_argument('-w', dest='width', type=int, help='set the width of NUMBER, e.g. 2: 01,02,03 / 3: 001,002,003')
         numberParser.add_argument('-s', dest='start', type=int, default=1, help='start index (default: 1)')
         numberParser.add_argument('-i', dest='increment', type=int, default=1, help='step size (default: 1)')
+        numberParser.add_argument('--replace', action='store_true', dest='replace', help='replace selected text')
         numberParser.add_argument('--no-reset', action='store_true', dest='noReset', help='avoid restart for each folder')
         numberParser.add_argument('file', nargs='*', default='.', help='file or folder')
         # cut
