@@ -16,6 +16,7 @@ Features:
 - Easy to use: No need to study regular expressions. Use command "test" to get more support.
 - More than 10 different commands available like add, replace, remove, swap, fill, dir, number.
 - Flexible: Combine commands with build-in placeholders (e.g. use "|artist|" for audio metadata)
+- Supporting Shell Auto Completion.
 - Moving files to different directories.
 - Cross-platform: Supporing Linux, Windows and Mac OS X.
 - Supporting dry run.
@@ -42,6 +43,12 @@ This step is optional and only needed if you want to use metadata (e.g. ID3 tags
 curl -LJO https://raw.githubusercontent.com/byte-cook/rename/main/rename.py
 curl -LJO https://raw.githubusercontent.com/byte-cook/rename/main/textparser.py
 chmod +x rename.py 
+```
+
+4. (Optional) Install shell auto completion:
+```
+curl -LJO https://raw.githubusercontent.com/byte-cook/rename/main/rename-sh-prompt.sh
+sudo cp rename-sh-prompt.sh /etc/bash_completion.d
 ```
 
 ## Example usage
