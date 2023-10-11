@@ -42,6 +42,7 @@ CMD_DIR = 'dir'
 PH_FILENAME = '|f|'
 PH_BASENAME = '|b|'
 PH_EXT = '|e|'
+PH_SELECTED = '|s|'
 PH_FOLDER_0 = '|f0|'
 PH_FOLDER_1 = '|f-1|'
 PH_FOLDER_2 = '|f-2|'
@@ -486,6 +487,10 @@ class FileRenamer:
             return self.path.stem
         if PH_EXT == placeholder:
             return self.path.suffix[1:]
+        if PH_SELECTED == placeholder:
+            token = self.getFirstTokenToChange()
+            if token:
+                return token.text
         if PH_MODIFICATIONDATE == placeholder:
             mTimestamp = self.path.stat().st_mtime
             mDate = time.strftime("%Y-%m-%d", time.gmtime(mTimestamp))
@@ -609,7 +614,7 @@ class FileRenamer:
         return False
         
 class TestCmd():
-    PLACEHOLDERS = { PH_FILENAME : 'File name', PH_BASENAME : 'Base name', PH_EXT : 'Extension', 
+    PLACEHOLDERS = { PH_FILENAME : 'File name', PH_BASENAME : 'Base name', PH_EXT : 'Extension', PH_SELECTED : 'Selected text',
         PH_FOLDER_0 : 'Folder', PH_FOLDER_1 : 'Parent folder', PH_FOLDER_2 : 'Parent folder 2', PH_FOLDER_3 : 'Parent folder 3', 
         PH_MODIFICATIONDATE : 'Last modified', PH_MODIFICATIONDATE_YEAR : 'Last modified year', PH_MODIFICATIONDATE_MONTH : 'Last modified month', PH_MODIFICATIONDATE_DAY : 'Last modified day',
         PH_AUDIO_ARTIST : 'Audio artist', PH_AUDIO_ALBUM : 'Audio album', PH_AUDIO_TRACK : 'Audio track', PH_AUDIO_NO : 'Audio Number',
@@ -621,9 +626,14 @@ class TestCmd():
             fileName = str(renamer.getSrcFile().name)
             self.length = max(self.length, int(len(fileName) / 10) + 1)
         self.indexPrinted = self.length == -1
+        self.fileIndex = 0
 
     def apply(self, renamer, args):
+        self.fileIndex += 1
         if args.showPlaceholders:
+            if not args.showAll and self.fileIndex > 1:
+                return
+
             print(f'Placeholders for: {renamer.getSrcFile()}')
             for ph in TestCmd.PLACEHOLDERS:
                 text = renamer.replaceSinglePlaceholder(ph, None, raiseIfNotFound=False)
@@ -636,6 +646,9 @@ class TestCmd():
                     
             print()
         else:
+            if not args.showAll and self.fileIndex > 10:
+                return
+
             fileName = str(renamer.getSrcFile().name)
             if not self.indexPrinted:
                 print(f'{ANSI_BOLD}', end='')
@@ -676,14 +689,16 @@ class NumberCmd():
         self.width = args.width if args.width else -1
         if self.width == -1:
             if args.noReset:
-                self.width = len(str(len(renamers)))
+                lastNo = self.start + ((len(renamers) - 1) * args.increment)
+                self.width = len(str(lastNo))
             else:
                 fileCountPerFolder = {}
                 for r in renamers:
                     dir = r.path.parent
                     fileCountPerFolder[dir] = fileCountPerFolder[dir]+1 if dir in fileCountPerFolder else 1
                 logging.debug(f'File count for folders: {fileCountPerFolder}')
-                self.width = len(str(max(fileCountPerFolder.values())))
+                lastNo = self.start + ((max(fileCountPerFolder.values()) - 1) * args.increment)
+                self.width = len(str(lastNo))
         self.increment = args.increment
         self.before = args.before if args.before else ""
         self.after = args.after if args.after else ""
@@ -950,6 +965,7 @@ def main(argv=None):
         subparsers.required = True
         # test
         testParser = subparsers.add_parser(CMD_TEST, help='print selected text and exit')
+        testParser.add_argument('-a', '--all', action='store_true', dest='showAll', help='show all files')
         testParser.add_argument('-p', action='store_true', dest='showPlaceholders', help='show placeholders')
         testParser.add_argument('file', nargs='*', default='.', help='file or folder')
         # add
@@ -994,8 +1010,8 @@ def main(argv=None):
         numberParser.add_argument('-b', dest='before', help='add TEXT before NUMBER')
         numberParser.add_argument('-a', dest='after', help='add TEXT after NUMBER')
         numberParser.add_argument('-w', dest='width', type=int, help='set the width of NUMBER, e.g. 2: 01,02,03 / 3: 001,002,003')
-        numberParser.add_argument('-s', dest='start', type=int, default=1, help='start index (default: 1)')
-        numberParser.add_argument('-i', dest='increment', type=int, default=1, help='step size (default: 1)')
+        numberParser.add_argument('-s', '--start', dest='start', type=int, default=1, help='start index (default: 1)')
+        numberParser.add_argument('-i', '--increment', dest='increment', type=int, default=1, help='step size (default: 1)')
         numberParser.add_argument('--replace', action='store_true', dest='replace', help='replace selected text')
         numberParser.add_argument('--no-reset', action='store_true', dest='noReset', help='avoid restart for each folder')
         numberParser.add_argument('file', nargs='*', default='.', help='file or folder')

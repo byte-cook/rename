@@ -81,6 +81,15 @@ class TestRename(unittest.TestCase):
         self._assertFilesNotExist(ROOT_DIR, 'this is my file.txt')
         newDir = str(Path(ROOT_DIR, 'new dir'))
         self._assertFilesExist(newDir, 'this is my file.txt')
+    def test_dir_selected(self):
+        print('======= test_dir_selected ===')
+        self._createSingleFiles(ROOT_DIR, 'IMG_2020.jpg', 'IMG_2020-2.jpg', 'IMG_2022.jpg')
+        rename.main(['--debug', '-b', '--index-from', '5', '--index-to', '8', 'dir', '|s|', ROOT_DIR])
+        self._assertFilesNotExist(ROOT_DIR, 'IMG_2020.jpg', 'IMG_2022.jpg')
+        _2020Dir = str(Path(ROOT_DIR, '2020'))
+        self._assertFilesExist(_2020Dir, 'IMG_2020.jpg', 'IMG_2020-2.jpg')
+        _2022Dir = str(Path(ROOT_DIR, '2022'))
+        self._assertFilesExist(_2022Dir, 'IMG_2022.jpg')
 
     def test_file_nonexist(self):
         print('======= test_file_nonexist ===')
@@ -233,6 +242,18 @@ class TestRename(unittest.TestCase):
         rename.main(['--debug', '--textx-from', '-', 'fill', '0', ROOT_DIR])
         rename.main(['--debug', 'number', '-a', '#', ROOT_DIR])
         self._assertFilesExist(ROOT_DIR, '001#track-001.txt', '012#track-012.txt', '081#track-081.txt', '100#track-100.txt')
+    def test_numbering_width_autodetect_2(self):
+        print('======= test_numbering_width_autodetect_2 ===')
+        self._createSingleFiles(ROOT_DIR, 'IMG_1.jpg', 'IMG_2.jpg', 'IMG_3.jpg', 'IMG_4.jpg')
+        rename.main(['--debug', '-b', 'number', '-b', '2023-', '--replace', '-i', '33', '-s', '2', ROOT_DIR])
+        # the calculation of the width must take into account the increment parameter
+        self._assertFilesExist(ROOT_DIR, '2023-002.jpg', '2023-035.jpg', '2023-068.jpg', '2023-101.jpg')
+    def test_numbering_width_autodetect_3(self):
+        print('======= test_numbering_width_autodetect_3 ===')
+        self._createSingleFiles(ROOT_DIR, 'IMG_1.jpg', 'IMG_2.jpg', 'IMG_3.jpg')
+        rename.main(['--debug', '-b', 'number', '-b', '2023-', '--replace', '--increment', '33', '--start', '35', ROOT_DIR])
+        # the calculation of the width must take into account the increment parameter
+        self._assertFilesExist(ROOT_DIR, '2023-035.jpg', '2023-068.jpg', '2023-101.jpg')
     def test_numbering_reset(self):
         print('======= test_numbering_reset ===')
         stonesDir = str(Path(ROOT_PATH / 'rolling stones'))
@@ -264,6 +285,12 @@ class TestRename(unittest.TestCase):
         self._createSingleFiles(ROOT_DIR, 'IMG_098.jpg', 'IMG_099.jpg')
         rename.main(['--debug', '-b', 'number', '-b', '2023-', '--replace', ROOT_DIR])
         self._assertFilesExist(ROOT_DIR, '2023-1.jpg', '2023-2.jpg')
+    def test_numbering_increment(self):
+        print('======= test_numbering_increment ===')
+        self._createSingleFiles(ROOT_DIR, 'IMG_098.jpg', 'IMG_099.jpg')
+        rename.main(['--debug', '-b', 'number', '-b', '2023-', '--replace', '-i', '10', ROOT_DIR])
+        # the calculation of the width must take into account the increment parameter
+        self._assertFilesExist(ROOT_DIR, '2023-01.jpg', '2023-11.jpg')
 
     def test_placeholder_audio(self):
         print('======= test_placeholder_audio ===')
@@ -299,6 +326,11 @@ class TestRename(unittest.TestCase):
             rename.main(['add', '|b||', ROOT_DIR])
         self.assertEqual(cm.exception.code, 1)
         self._assertFilesExist(ROOT_DIR, 'aa.txt')
+    def test_placeholder_selected(self):
+        print('======= test_placeholder_selected ===')
+        self._createSingleFiles(ROOT_DIR, 'a.txt', 'abc.txt')
+        rename.main(['-b', 'add', '|s|', ROOT_DIR])
+        self._assertFilesExist(ROOT_DIR, 'aa.txt', 'abcabc.txt')
 
     def test_replace_ext(self):
         print('======= test_replace_ext ===')
@@ -642,11 +674,13 @@ class TestRename(unittest.TestCase):
     def test_test(self):
         print('======= test_test ===')
         self._createSingleFiles(ROOT_DIR, 'IMG_#01.jpg', 'IMG_#02.jpg', 'IMG_02.jpg', 'a very long, very long file name to test.txt')
+        self._createFiles(ROOT_DIR, 50, 'IMG_')
         rename.main(['-b', '--index-from', '4', 'test', ROOT_DIR])
 
     def test_test_placeholder(self):
         print('======= test_test_placeholder ===')
         self._createSingleFiles(ROOT_DIR, 'IMG_#01.jpg', 'IMG_#02.jpg', 'IMG_02.jpg', 'a very long, very long file name to test.txt')
+        self._createFiles(ROOT_DIR, 50, 'IMG_')
         rename.main(['-b', '--index-from', '4', 'test', '-p', ROOT_DIR])
     def test_test_placeholder_pattern(self):
         print('======= test_test_placeholder_pattern ===')
