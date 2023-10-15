@@ -57,6 +57,13 @@ PH_AUDIO_ALBUM = '|album|'
 PH_AUDIO_TRACK = '|track|'
 PH_AUDIO_NO = '|no|'
 
+PLACEHOLDERS = { PH_FILENAME : 'File name', PH_BASENAME : 'Base name', PH_EXT : 'Extension', PH_SELECTED : 'Selected text',
+    PH_FOLDER_0 : 'Folder', PH_FOLDER_1 : 'Parent folder', PH_FOLDER_2 : 'Parent folder 2', PH_FOLDER_3 : 'Parent folder 3', 
+    PH_MODIFICATIONDATE : 'Last modified', PH_MODIFICATIONDATE_YEAR : 'Last modified year', PH_MODIFICATIONDATE_MONTH : 'Last modified month', PH_MODIFICATIONDATE_DAY : 'Last modified day',
+    PH_AUDIO_ARTIST : 'Audio artist', PH_AUDIO_ALBUM : 'Audio album', PH_AUDIO_TRACK : 'Audio track', PH_AUDIO_NO : 'Audio Number',
+    PH_ESCAPE : 'Escape pipe "|"' }
+
+
 # attributes
 AT_SELECT = 's'
 AT_GREEDY = '?'
@@ -84,6 +91,9 @@ class SelectPatternNameAttribute:
         self.placeholderName = '|' + split[0] + '|'
         if PH_ESCAPE != self.placeholderName and not split[0].isalnum():
             raise RenameError(f'Error: Only alphanumerics are allowed for placeholder name: {self.placeholderName}')
+        if PH_ESCAPE != self.placeholderName and self.placeholderName in PLACEHOLDERS:
+            raise RenameError(f'Error: Do not overwrite reserved placeholder: {self.placeholderName}')
+        
         # analyse attribute of a placeholder, e.g. "" or "s" or "s:7"
         attributes = split[1:]
         logging.debug(f'Attributes for "{name}": {attributes}')
@@ -614,12 +624,6 @@ class FileRenamer:
         return False
         
 class TestCmd():
-    PLACEHOLDERS = { PH_FILENAME : 'File name', PH_BASENAME : 'Base name', PH_EXT : 'Extension', PH_SELECTED : 'Selected text',
-        PH_FOLDER_0 : 'Folder', PH_FOLDER_1 : 'Parent folder', PH_FOLDER_2 : 'Parent folder 2', PH_FOLDER_3 : 'Parent folder 3', 
-        PH_MODIFICATIONDATE : 'Last modified', PH_MODIFICATIONDATE_YEAR : 'Last modified year', PH_MODIFICATIONDATE_MONTH : 'Last modified month', PH_MODIFICATIONDATE_DAY : 'Last modified day',
-        PH_AUDIO_ARTIST : 'Audio artist', PH_AUDIO_ALBUM : 'Audio album', PH_AUDIO_TRACK : 'Audio track', PH_AUDIO_NO : 'Audio Number',
-        PH_ESCAPE : 'Escape pipe "|"' }
-    
     def __init__(self, renamers, args):
         self.length = -1
         for renamer in renamers:
@@ -635,10 +639,10 @@ class TestCmd():
                 return
 
             print(f'Placeholders for: {renamer.getSrcFile()}')
-            for ph in TestCmd.PLACEHOLDERS:
+            for ph in PLACEHOLDERS:
                 text = renamer.replaceSinglePlaceholder(ph, None, raiseIfNotFound=False)
                 if text != ph:
-                    print(f'{TestCmd.PLACEHOLDERS[ph]:<20}: {ph:8} {ANSI_CYAN}{text}{ANSI_END}')
+                    print(f'{PLACEHOLDERS[ph]:<20}: {ph:8} {ANSI_CYAN}{text}{ANSI_END}')
 
             for t in renamer.tokens:
                 for ph in t.patternPlaceholders:

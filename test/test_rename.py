@@ -319,6 +319,13 @@ class TestRename(unittest.TestCase):
             rename.main(['add', '|notfound|_', ROOT_DIR])
         self.assertEqual(cm.exception.code, 1)
         self._assertFilesExist(ROOT_DIR, 'aa.txt')
+    def test_placeholder_reserved(self):
+        print('======= test_placeholder_reserved ===')
+        self._createSingleFiles(ROOT_DIR, 'aa.txt')
+        with self.assertRaises(SystemExit) as cm:
+            rename.main(['--debug', '--pattern', '|m|.txt', 'add', 'NEW_', ROOT_DIR])
+        self.assertEqual(cm.exception.code, 1)
+        self._assertFilesExist(ROOT_DIR, 'aa.txt')
     def test_placeholder_syntaxerror(self):
         print('======= test_placeholder_syntaxerror ===')
         self._createSingleFiles(ROOT_DIR, 'aa.txt')
