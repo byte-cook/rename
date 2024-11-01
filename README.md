@@ -38,17 +38,22 @@ pip3 install mutagen
 ```
 This step is optional and only needed if you want to use metadata (e.g. ID3 tags in MP3 files) to rename files.
 
-3. Download Rename.py and set execute permmissions:
+3. Download Rename.py and set execute permissions:
 ```
 curl -LJO https://raw.githubusercontent.com/byte-cook/rename/main/rename.py
 curl -LJO https://raw.githubusercontent.com/byte-cook/rename/main/textparser.py
 chmod +x rename.py 
 ```
 
-4. (Optional) Install shell auto completion:
+4. (Optional) Use opt.py to install it to the /opt directory:
+```
+sudo opt.py install rename rename.py textparser.py
+```
+
+5. (Optional) Install shell auto completion:
 ```
 curl -LJO https://raw.githubusercontent.com/byte-cook/rename/main/rename-sh-prompt.sh
-sudo cp rename-sh-prompt.sh /etc/bash_completion.d
+sudo opt.py autocomplete rename rename-sh-prompt.sh
 ```
 
 ## Example usage
