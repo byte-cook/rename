@@ -29,7 +29,7 @@ If you can't use Rename.py to rename files as you want, feel free to create an i
 1. Install Python3 as follows in Ubuntu/Debian Linux:
 
 ```
-sudo apt install python3.6
+sudo apt install python3
 ```
 
 2. (Optional) Use pip to install dependencies:
@@ -45,7 +45,7 @@ curl -LJO https://raw.githubusercontent.com/byte-cook/rename/main/textparser.py
 chmod +x rename.py 
 ```
 
-4. (Optional) Use opt.py to install it to the /opt directory:
+4. (Optional) Use [opt.py](https://github.com/byte-cook/opt) to install it to the /opt directory:
 ```
 sudo opt.py install rename rename.py textparser.py
 ```
